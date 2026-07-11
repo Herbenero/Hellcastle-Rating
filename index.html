@@ -34,7 +34,21 @@
                         </div>
                     </div>
                     
-                    <form id="matchForm">
+                    <form id="matchForm" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Game Played</label>
+                                <input type="text" id="gameName" placeholder="e.g. Catan, Golf, Poker" required class="w-full bg-slate-800 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500">
+                            </div>
+                            <div>
+                                <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Win Condition</label>
+                                <select id="winCondition" class="w-full bg-slate-800 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500">
+                                    <option value="high">High Score Wins</option>
+                                    <option value="low">Low Score Wins</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div id="playerRows" class="space-y-3 mb-6">
                             <!-- Rows added by JS -->
                         </div>
@@ -50,6 +64,7 @@
                             <thead>
                                 <tr class="text-slate-500 text-xs uppercase border-b border-slate-700">
                                     <th class="pb-2">Date</th>
+                                    <th class="pb-2">Game</th>
                                     <th class="pb-2">Result Summary</th>
                                 </tr>
                             </thead>
@@ -86,7 +101,6 @@
         let players = JSON.parse(localStorage.getItem('hr_v3_players')) || {};
         let history = JSON.parse(localStorage.getItem('hr_v3_history')) || [];
 
-        // Set default date to today
         document.getElementById('matchDate').valueAsDate = new Date();
 
         function addPlayerRow() {
@@ -111,35 +125,46 @@
             return 1 / (1 + Math.pow(10, (rb - ra) / 400));
         }
 
-        function processMatch(matchResults, date) {
-            matchResults.sort((a, b) => b.score - a.score);
+        function processMatch(matchResults, date, gameName, winCondition) {
+            // Sort for history summary display (still useful to see who "won")
+            const sortedResults = [...matchResults].sort((a, b) => 
+                winCondition === 'high' ? b.score - a.score : a.score - b.score
+            );
+
             const numPlayers = matchResults.length;
             const ratingChanges = {};
-
             matchResults.forEach(p => ratingChanges[p.name] = 0);
 
             for (let i = 0; i < numPlayers; i++) {
                 for (let j = i + 1; j < numPlayers; j++) {
                     const p1 = matchResults[i];
                     const p2 = matchResults[j];
+                    
                     const ea = getExpectedScore(p1.currentRating, p2.currentRating);
-                    let outcome = (p1.score > p2.score) ? 1 : (p1.score === p2.score ? 0.5 : 0);
+                    
+                    let outcome;
+                    if (p1.score === p2.score) {
+                        outcome = 0.5;
+                    } else {
+                        if (winCondition === 'high') {
+                            outcome = (p1.score > p2.score) ? 1 : 0;
+                        } else {
+                            outcome = (p1.score < p2.score) ? 1 : 0;
+                        }
+                    }
+
                     let winChange = (K / (numPlayers - 1)) * (outcome - ea);
-                    const maxScore = Math.max(p1.score, 1);
-                    const bonus = ((p1.score - p2.score) / maxScore) * (10 / (numPlayers - 1));
-                    ratingChanges[p1.name] += (winChange + bonus);
-                    ratingChanges[p2.name] -= (winChange + (bonus * 0.5));
+                    ratingChanges[p1.name] += winChange;
+                    ratingChanges[p2.name] -= winChange;
                 }
             }
 
-            // Apply ratings
             for (const name in ratingChanges) {
                 players[name] = Math.round((players[name] || 1000) + ratingChanges[name]);
             }
 
-            // Save to history
-            const summary = matchResults.map(p => `${p.name} (${p.score})`).join(", ");
-            history.unshift({ date, summary });
+            const summary = sortedResults.map(p => `${p.name} (${p.score})`).join(", ");
+            history.unshift({ date, game: gameName, summary });
 
             localStorage.setItem('hr_v3_players', JSON.stringify(players));
             localStorage.setItem('hr_v3_history', JSON.stringify(history));
@@ -171,7 +196,8 @@
             tbody.innerHTML = history.map(item => `
                 <tr class="hover:bg-slate-800/50 transition-colors">
                     <td class="py-3 font-mono text-xs text-slate-400">${item.date}</td>
-                    <td class="py-3 text-slate-200">${item.summary}</td>
+                    <td class="py-3 font-bold text-slate-300">${item.game || 'N/A'}</td>
+                    <td class="py-3 text-slate-400 text-xs">${item.summary}</td>
                 </tr>
             `).join('');
         }
@@ -188,8 +214,10 @@
         document.getElementById('matchForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const date = document.getElementById('matchDate').value;
+            const gameName = document.getElementById('gameName').value.trim();
+            const winCondition = document.getElementById('winCondition').value;
             const names = Array.from(document.querySelectorAll('.p-name')).map(i => i.value.trim());
-            const scores = Array.from(document.querySelectorAll('.p-score')).map(i => parseInt(i.value));
+            const scores = Array.from(document.querySelectorAll('.p-score')).map(i => parseFloat(i.value));
             
             if (names.length < 2) { alert("Enter at least 2 players."); return; }
             if (new Set(names).size !== names.length) { alert("Duplicate player names detected."); return; }
@@ -198,10 +226,12 @@
                 name, score: scores[i], currentRating: players[name] || 1000
             }));
 
-            processMatch(results, date);
-            e.target.reset();
-            document.getElementById('matchDate').valueAsDate = new Date();
+            processMatch(results, date, gameName, winCondition);
+            
+            // UI Reset
+            document.getElementById('gameName').value = '';
             document.getElementById('playerRows').innerHTML = '';
+            document.getElementById('matchDate').valueAsDate = new Date();
             addPlayerRow(); addPlayerRow();
         });
 
