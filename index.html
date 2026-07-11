@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellcastle Rating (HR) Tracker</title>
+    <title>Hellcastle Rating (HR) Multiplayer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #0f172a; color: #f8fafc; }
@@ -11,49 +11,48 @@
         .accent { color: #ef4444; }
         .btn-primary { background-color: #ef4444; transition: all 0.2s; }
         .btn-primary:hover { background-color: #dc2626; transform: translateY(-1px); }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
 <body class="p-4 md:p-8">
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-5xl mx-auto">
         <header class="mb-8 text-center">
             <h1 class="text-4xl font-black tracking-tighter uppercase italic">Hellcastle <span class="accent">Rating</span></h1>
-            <p class="text-slate-400">Competitive Multi-Game Tracking System</p>
+            <p class="text-slate-400">Multiplayer Match Tracker</p>
         </header>
 
-        <div class="grid md:grid-cols-2 gap-8">
+        <div class="grid lg:grid-cols-3 gap-8">
             <!-- Input Form -->
-            <section class="card p-6 rounded-xl shadow-xl">
-                <h2 class="text-xl font-bold mb-4 flex items-center">
-                    <span class="mr-2">⚔️</span> Record a Match
-                </h2>
-                <form id="matchForm" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-400 mb-1">Player 1 (Winner)</label>
-                        <input type="text" id="p1Name" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500" placeholder="Name">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-400 mb-1">Player 2 (Loser)</label>
-                        <input type="text" id="p2Name" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500" placeholder="Name">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-400 mb-1">P1 Score</label>
-                            <input type="number" id="p1Score" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-400 mb-1">P2 Score</label>
-                            <input type="number" id="p2Score" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500">
+            <section class="lg:col-span-2 card p-6 rounded-xl shadow-xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold italic uppercase tracking-wider">⚔️ Record Multiplayer Match</h2>
+                    <button type="button" onclick="addPlayerRow()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full border border-slate-500 transition-colors">+ Add Player</button>
+                </div>
+                
+                <form id="matchForm">
+                    <div id="playerRows" class="space-y-3 mb-6">
+                        <!-- Default Rows -->
+                        <div class="grid grid-cols-12 gap-3 items-center player-row">
+                            <div class="col-span-7">
+                                <input type="text" placeholder="Player Name" required class="p-name w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500">
+                            </div>
+                            <div class="col-span-4">
+                                <input type="number" placeholder="Score" required class="p-score w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500 text-center">
+                            </div>
+                            <div class="col-span-1 text-right">
+                                <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-slate-500 hover:text-red-500">×</button>
+                            </div>
                         </div>
                     </div>
-                    <button type="submit" class="w-full btn-primary text-white font-bold py-3 rounded-lg uppercase tracking-widest mt-4">Calculate & Log</button>
+                    
+                    <button type="submit" class="w-full btn-primary text-white font-bold py-4 rounded-lg uppercase tracking-widest">Process Multiplayer Results</button>
+                    <p class="text-[10px] text-slate-500 mt-3 text-center uppercase tracking-tighter italic">Multiplayer logic calculates results as a series of pairwise exchanges based on rank order.</p>
                 </form>
             </section>
 
             <!-- Leaderboard -->
             <section class="card p-6 rounded-xl shadow-xl">
-                <h2 class="text-xl font-bold mb-4 flex items-center">
-                    <span class="mr-2">🏆</span> HR Leaderboard
-                </h2>
+                <h2 class="text-xl font-bold mb-4 italic uppercase">🏆 HR Leaderboard</h2>
                 <div class="overflow-hidden">
                     <table class="w-full text-left">
                         <thead>
@@ -62,45 +61,79 @@
                                 <th class="pb-2 text-right">HR</th>
                             </tr>
                         </thead>
-                        <tbody id="leaderboardBody" class="divide-y divide-slate-800">
-                            <!-- Players added here -->
-                        </tbody>
+                        <tbody id="leaderboardBody" class="divide-y divide-slate-800"></tbody>
                     </table>
                 </div>
-                <div id="emptyState" class="text-center py-8 text-slate-500 italic">No matches recorded yet.</div>
+                <div id="emptyState" class="text-center py-8 text-slate-500 italic">No rankings yet.</div>
+                <button onclick="resetData()" class="mt-6 w-full text-[10px] uppercase text-slate-600 hover:text-red-400">Clear All Data</button>
             </section>
         </div>
     </div>
 
     <script>
-        // HR Logic Implementation
         const K = 30;
-        let players = JSON.parse(localStorage.getItem('hr_players')) || {};
+        let players = JSON.parse(localStorage.getItem('hr_multi_players')) || {};
+
+        function addPlayerRow() {
+            const container = document.getElementById('playerRows');
+            const row = document.createElement('div');
+            row.className = "grid grid-cols-12 gap-3 items-center player-row";
+            row.innerHTML = `
+                <div class="col-span-7">
+                    <input type="text" placeholder="Player Name" required class="p-name w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500">
+                </div>
+                <div class="col-span-4">
+                    <input type="number" placeholder="Score" required class="p-score w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500 text-center">
+                </div>
+                <div class="col-span-1 text-right">
+                    <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-slate-500 hover:text-red-500">×</button>
+                </div>
+            `;
+            container.appendChild(row);
+        }
 
         function getExpectedScore(ra, rb) {
             return 1 / (1 + Math.pow(10, (rb - ra) / 400));
         }
 
-        function updateRatings(winnerName, loserName, wScore, lScore) {
-            // Ensure players exist
-            if (!players[winnerName]) players[winnerName] = 1000;
-            if (!players[loserName]) players[loserName] = 1000;
+        function calculateMultiplayerMatch(matchResults) {
+            // matchResults: Array of {name, score, currentRating}
+            // Sort by score descending (winner first)
+            matchResults.sort((a, b) => b.score - a.score);
+            const numPlayers = matchResults.length;
+            const ratingChanges = {};
 
-            const ra = players[winnerName];
-            const rb = players[loserName];
+            matchResults.forEach(p => ratingChanges[p.name] = 0);
 
-            // Win Component
-            const expectedA = getExpectedScore(ra, rb);
-            const winChange = K * (1 - expectedA);
+            // Calculate pairwise results (everyone plays everyone else)
+            // Each pairwise result is scaled by (N-1) to maintain rating stability
+            for (let i = 0; i < numPlayers; i++) {
+                for (let j = i + 1; j < numPlayers; j++) {
+                    const p1 = matchResults[i];
+                    const p2 = matchResults[j];
 
-            // Hellcastle Bonus Component (Margin of Victory)
-            // Using Winner's Score as denominator to keep bonus scale between 0-10
-            const bonus = ((wScore - lScore) / (wScore || 1)) * 10;
+                    const ea = getExpectedScore(p1.currentRating, p2.currentRating);
+                    
+                    // Standard win/loss outcome
+                    let outcome = (p1.score > p2.score) ? 1 : (p1.score === p2.score ? 0.5 : 0);
+                    
+                    let winChange = (K / (numPlayers - 1)) * (outcome - ea);
+                    
+                    // Hellcastle Bonus (Margin of Victory)
+                    const maxScore = Math.max(p1.score, 1);
+                    const bonus = ((p1.score - p2.score) / maxScore) * (10 / (numPlayers - 1));
 
-            players[winnerName] = Math.round(ra + winChange + bonus);
-            players[loserName] = Math.round(rb - winChange - (bonus * 0.5)); // Loser penalized slightly less for the bonus
+                    ratingChanges[p1.name] += (winChange + bonus);
+                    ratingChanges[p2.name] -= (winChange + (bonus * 0.5));
+                }
+            }
 
-            localStorage.setItem('hr_players', JSON.stringify(players));
+            // Apply changes
+            for (const name in ratingChanges) {
+                players[name] = Math.round((players[name] || 1000) + ratingChanges[name]);
+            }
+
+            localStorage.setItem('hr_multi_players', JSON.stringify(players));
             renderLeaderboard();
         }
 
@@ -109,36 +142,49 @@
             const empty = document.getElementById('emptyState');
             tbody.innerHTML = '';
 
-            const sortedPlayers = Object.entries(players).sort((a, b) => b[1] - a[1]);
-
-            if (sortedPlayers.length > 0) {
+            const sorted = Object.entries(players).sort((a, b) => b[1] - a[1]);
+            if (sorted.length > 0) {
                 empty.classList.add('hidden');
-                sortedPlayers.forEach(([name, hr]) => {
-                    const row = `<tr>
-                        <td class="py-3 font-medium">${name}</td>
-                        <td class="py-3 text-right font-bold accent">${hr}</td>
-                    </tr>`;
-                    tbody.innerHTML += row;
+                sorted.forEach(([name, hr]) => {
+                    tbody.innerHTML += `<tr><td class="py-3 font-medium">${name}</td><td class="py-3 text-right font-bold accent">${hr}</td></tr>`;
                 });
+            } else {
+                empty.classList.remove('hidden');
+            }
+        }
+
+        function resetData() {
+            if (confirm("Reset all ratings to 1000?")) {
+                players = {};
+                localStorage.removeItem('hr_multi_players');
+                renderLeaderboard();
             }
         }
 
         document.getElementById('matchForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            const p1 = document.getElementById('p1Name').value.trim();
-            const p2 = document.getElementById('p2Name').value.trim();
-            const s1 = parseInt(document.getElementById('p1Score').value);
-            const s2 = parseInt(document.getElementById('p2Score').value);
-
-            if (p1.toLowerCase() === p2.toLowerCase()) {
-                alert("Players must be different!");
+            const names = Array.from(document.querySelectorAll('.p-name')).map(i => i.value.trim());
+            const scores = Array.from(document.querySelectorAll('.p-score')).map(i => parseInt(i.value));
+            
+            if (new Set(names).size !== names.length) {
+                alert("Duplicate player names detected!");
                 return;
             }
 
-            updateRatings(p1, p2, s1, s2);
+            const matchResults = names.map((name, i) => {
+                if (!players[name]) players[name] = 1000;
+                return { name, score: scores[i], currentRating: players[name] };
+            });
+
+            calculateMultiplayerMatch(matchResults);
             e.target.reset();
+            // Keep at least 2 rows
+            document.getElementById('playerRows').innerHTML = '';
+            addPlayerRow(); addPlayerRow();
         });
 
+        // Initialize with 2 rows
+        addPlayerRow(); addPlayerRow();
         renderLeaderboard();
     </script>
 </body>
