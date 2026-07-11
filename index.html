@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hellcastle Rating (HR) Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; }
+        .card { background-color: #1e293b; border: 1px solid #334155; }
+        .accent { color: #ef4444; }
+        .btn-primary { background-color: #ef4444; transition: all 0.2s; }
+        .btn-primary:hover { background-color: #dc2626; transform: translateY(-1px); }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl font-black tracking-tighter uppercase italic">Hellcastle <span class="accent">Rating</span></h1>
+            <p class="text-slate-400">Competitive Multi-Game Tracking System</p>
+        </header>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- Input Form -->
+            <section class="card p-6 rounded-xl shadow-xl">
+                <h2 class="text-xl font-bold mb-4 flex items-center">
+                    <span class="mr-2">⚔️</span> Record a Match
+                </h2>
+                <form id="matchForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-1">Player 1 (Winner)</label>
+                        <input type="text" id="p1Name" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500" placeholder="Name">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-1">Player 2 (Loser)</label>
+                        <input type="text" id="p2Name" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500" placeholder="Name">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-1">P1 Score</label>
+                            <input type="number" id="p1Score" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-1">P2 Score</label>
+                            <input type="number" id="p2Score" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full btn-primary text-white font-bold py-3 rounded-lg uppercase tracking-widest mt-4">Calculate & Log</button>
+                </form>
+            </section>
+
+            <!-- Leaderboard -->
+            <section class="card p-6 rounded-xl shadow-xl">
+                <h2 class="text-xl font-bold mb-4 flex items-center">
+                    <span class="mr-2">🏆</span> HR Leaderboard
+                </h2>
+                <div class="overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-slate-500 text-xs uppercase border-b border-slate-700">
+                                <th class="pb-2">Player</th>
+                                <th class="pb-2 text-right">HR</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardBody" class="divide-y divide-slate-800">
+                            <!-- Players added here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="emptyState" class="text-center py-8 text-slate-500 italic">No matches recorded yet.</div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        // HR Logic Implementation
+        const K = 30;
+        let players = JSON.parse(localStorage.getItem('hr_players')) || {};
+
+        function getExpectedScore(ra, rb) {
+            return 1 / (1 + Math.pow(10, (rb - ra) / 400));
+        }
+
+        function updateRatings(winnerName, loserName, wScore, lScore) {
+            // Ensure players exist
+            if (!players[winnerName]) players[winnerName] = 1000;
+            if (!players[loserName]) players[loserName] = 1000;
+
+            const ra = players[winnerName];
+            const rb = players[loserName];
+
+            // Win Component
+            const expectedA = getExpectedScore(ra, rb);
+            const winChange = K * (1 - expectedA);
+
+            // Hellcastle Bonus Component (Margin of Victory)
+            // Using Winner's Score as denominator to keep bonus scale between 0-10
+            const bonus = ((wScore - lScore) / (wScore || 1)) * 10;
+
+            players[winnerName] = Math.round(ra + winChange + bonus);
+            players[loserName] = Math.round(rb - winChange - (bonus * 0.5)); // Loser penalized slightly less for the bonus
+
+            localStorage.setItem('hr_players', JSON.stringify(players));
+            renderLeaderboard();
+        }
+
+        function renderLeaderboard() {
+            const tbody = document.getElementById('leaderboardBody');
+            const empty = document.getElementById('emptyState');
+            tbody.innerHTML = '';
+
+            const sortedPlayers = Object.entries(players).sort((a, b) => b[1] - a[1]);
+
+            if (sortedPlayers.length > 0) {
+                empty.classList.add('hidden');
+                sortedPlayers.forEach(([name, hr]) => {
+                    const row = `<tr>
+                        <td class="py-3 font-medium">${name}</td>
+                        <td class="py-3 text-right font-bold accent">${hr}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+            }
+        }
+
+        document.getElementById('matchForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const p1 = document.getElementById('p1Name').value.trim();
+            const p2 = document.getElementById('p2Name').value.trim();
+            const s1 = parseInt(document.getElementById('p1Score').value);
+            const s2 = parseInt(document.getElementById('p2Score').value);
+
+            if (p1.toLowerCase() === p2.toLowerCase()) {
+                alert("Players must be different!");
+                return;
+            }
+
+            updateRatings(p1, p2, s1, s2);
+            e.target.reset();
+        });
+
+        renderLeaderboard();
+    </script>
+</body>
+</html>
