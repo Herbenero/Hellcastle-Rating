@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellcastle Rating (HR) Multiplayer</title>
+    <title>Hellcastle Rating (HR) Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #0f172a; color: #f8fafc; }
@@ -12,46 +12,57 @@
         .btn-primary { background-color: #ef4444; transition: all 0.2s; }
         .btn-primary:hover { background-color: #dc2626; transform: translateY(-1px); }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        ::-webkit-calendar-picker-indicator { filter: invert(1); }
     </style>
 </head>
 <body class="p-4 md:p-8">
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-6xl mx-auto">
         <header class="mb-8 text-center">
             <h1 class="text-4xl font-black tracking-tighter uppercase italic">Hellcastle <span class="accent">Rating</span></h1>
-            <p class="text-slate-400">Multiplayer Match Tracker</p>
+            <p class="text-slate-400">Match History & Multiplayer Tracker</p>
         </header>
 
         <div class="grid lg:grid-cols-3 gap-8">
             <!-- Input Form -->
-            <section class="lg:col-span-2 card p-6 rounded-xl shadow-xl">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold italic uppercase tracking-wider">⚔️ Record Multiplayer Match</h2>
-                    <button type="button" onclick="addPlayerRow()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full border border-slate-500 transition-colors">+ Add Player</button>
-                </div>
-                
-                <form id="matchForm">
-                    <div id="playerRows" class="space-y-3 mb-6">
-                        <!-- Default Rows -->
-                        <div class="grid grid-cols-12 gap-3 items-center player-row">
-                            <div class="col-span-7">
-                                <input type="text" placeholder="Player Name" required class="p-name w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500">
-                            </div>
-                            <div class="col-span-4">
-                                <input type="number" placeholder="Score" required class="p-score w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500 text-center">
-                            </div>
-                            <div class="col-span-1 text-right">
-                                <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-slate-500 hover:text-red-500">×</button>
-                            </div>
+            <section class="lg:col-span-2 space-y-8">
+                <div class="card p-6 rounded-xl shadow-xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold italic uppercase tracking-wider">⚔️ Record Match</h2>
+                        <div class="flex gap-2">
+                            <input type="date" id="matchDate" class="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs focus:outline-none focus:border-red-500">
+                            <button type="button" onclick="addPlayerRow()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full border border-slate-500 transition-colors">+ Player</button>
                         </div>
                     </div>
                     
-                    <button type="submit" class="w-full btn-primary text-white font-bold py-4 rounded-lg uppercase tracking-widest">Process Multiplayer Results</button>
-                    <p class="text-[10px] text-slate-500 mt-3 text-center uppercase tracking-tighter italic">Multiplayer logic calculates results as a series of pairwise exchanges based on rank order.</p>
-                </form>
+                    <form id="matchForm">
+                        <div id="playerRows" class="space-y-3 mb-6">
+                            <!-- Rows added by JS -->
+                        </div>
+                        <button type="submit" class="w-full btn-primary text-white font-bold py-4 rounded-lg uppercase tracking-widest">Process Match Results</button>
+                    </form>
+                </div>
+
+                <!-- Match History -->
+                <div class="card p-6 rounded-xl shadow-xl">
+                    <h2 class="text-xl font-bold mb-4 italic uppercase">📜 Match History</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="text-slate-500 text-xs uppercase border-b border-slate-700">
+                                    <th class="pb-2">Date</th>
+                                    <th class="pb-2">Result Summary</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyBody" class="divide-y divide-slate-800">
+                                <!-- History items -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </section>
 
             <!-- Leaderboard -->
-            <section class="card p-6 rounded-xl shadow-xl">
+            <section class="card p-6 rounded-xl shadow-xl h-fit sticky top-8">
                 <h2 class="text-xl font-bold mb-4 italic uppercase">🏆 HR Leaderboard</h2>
                 <div class="overflow-hidden">
                     <table class="w-full text-left">
@@ -72,12 +83,16 @@
 
     <script>
         const K = 30;
-        let players = JSON.parse(localStorage.getItem('hr_multi_players')) || {};
+        let players = JSON.parse(localStorage.getItem('hr_v3_players')) || {};
+        let history = JSON.parse(localStorage.getItem('hr_v3_history')) || [];
+
+        // Set default date to today
+        document.getElementById('matchDate').valueAsDate = new Date();
 
         function addPlayerRow() {
             const container = document.getElementById('playerRows');
             const row = document.createElement('div');
-            row.className = "grid grid-cols-12 gap-3 items-center player-row";
+            row.className = "grid grid-cols-12 gap-3 items-center player-row animate-in fade-in slide-in-from-left-2 duration-200";
             row.innerHTML = `
                 <div class="col-span-7">
                     <input type="text" placeholder="Player Name" required class="p-name w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500">
@@ -86,7 +101,7 @@
                     <input type="number" placeholder="Score" required class="p-score w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500 text-center">
                 </div>
                 <div class="col-span-1 text-right">
-                    <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-slate-500 hover:text-red-500">×</button>
+                    <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-slate-500 hover:text-red-500 text-xl">&times;</button>
                 </div>
             `;
             container.appendChild(row);
@@ -96,52 +111,50 @@
             return 1 / (1 + Math.pow(10, (rb - ra) / 400));
         }
 
-        function calculateMultiplayerMatch(matchResults) {
-            // matchResults: Array of {name, score, currentRating}
-            // Sort by score descending (winner first)
+        function processMatch(matchResults, date) {
             matchResults.sort((a, b) => b.score - a.score);
             const numPlayers = matchResults.length;
             const ratingChanges = {};
 
             matchResults.forEach(p => ratingChanges[p.name] = 0);
 
-            // Calculate pairwise results (everyone plays everyone else)
-            // Each pairwise result is scaled by (N-1) to maintain rating stability
             for (let i = 0; i < numPlayers; i++) {
                 for (let j = i + 1; j < numPlayers; j++) {
                     const p1 = matchResults[i];
                     const p2 = matchResults[j];
-
                     const ea = getExpectedScore(p1.currentRating, p2.currentRating);
-                    
-                    // Standard win/loss outcome
                     let outcome = (p1.score > p2.score) ? 1 : (p1.score === p2.score ? 0.5 : 0);
-                    
                     let winChange = (K / (numPlayers - 1)) * (outcome - ea);
-                    
-                    // Hellcastle Bonus (Margin of Victory)
                     const maxScore = Math.max(p1.score, 1);
                     const bonus = ((p1.score - p2.score) / maxScore) * (10 / (numPlayers - 1));
-
                     ratingChanges[p1.name] += (winChange + bonus);
                     ratingChanges[p2.name] -= (winChange + (bonus * 0.5));
                 }
             }
 
-            // Apply changes
+            // Apply ratings
             for (const name in ratingChanges) {
                 players[name] = Math.round((players[name] || 1000) + ratingChanges[name]);
             }
 
-            localStorage.setItem('hr_multi_players', JSON.stringify(players));
+            // Save to history
+            const summary = matchResults.map(p => `${p.name} (${p.score})`).join(", ");
+            history.unshift({ date, summary });
+
+            localStorage.setItem('hr_v3_players', JSON.stringify(players));
+            localStorage.setItem('hr_v3_history', JSON.stringify(history));
+            renderAll();
+        }
+
+        function renderAll() {
             renderLeaderboard();
+            renderHistory();
         }
 
         function renderLeaderboard() {
             const tbody = document.getElementById('leaderboardBody');
             const empty = document.getElementById('emptyState');
             tbody.innerHTML = '';
-
             const sorted = Object.entries(players).sort((a, b) => b[1] - a[1]);
             if (sorted.length > 0) {
                 empty.classList.add('hidden');
@@ -153,39 +166,47 @@
             }
         }
 
+        function renderHistory() {
+            const tbody = document.getElementById('historyBody');
+            tbody.innerHTML = history.map(item => `
+                <tr class="hover:bg-slate-800/50 transition-colors">
+                    <td class="py-3 font-mono text-xs text-slate-400">${item.date}</td>
+                    <td class="py-3 text-slate-200">${item.summary}</td>
+                </tr>
+            `).join('');
+        }
+
         function resetData() {
-            if (confirm("Reset all ratings to 1000?")) {
+            if (confirm("Permanently delete all ratings and match history?")) {
                 players = {};
-                localStorage.removeItem('hr_multi_players');
-                renderLeaderboard();
+                history = [];
+                localStorage.clear();
+                renderAll();
             }
         }
 
         document.getElementById('matchForm').addEventListener('submit', (e) => {
             e.preventDefault();
+            const date = document.getElementById('matchDate').value;
             const names = Array.from(document.querySelectorAll('.p-name')).map(i => i.value.trim());
             const scores = Array.from(document.querySelectorAll('.p-score')).map(i => parseInt(i.value));
             
-            if (new Set(names).size !== names.length) {
-                alert("Duplicate player names detected!");
-                return;
-            }
+            if (names.length < 2) { alert("Enter at least 2 players."); return; }
+            if (new Set(names).size !== names.length) { alert("Duplicate player names detected."); return; }
 
-            const matchResults = names.map((name, i) => {
-                if (!players[name]) players[name] = 1000;
-                return { name, score: scores[i], currentRating: players[name] };
-            });
+            const results = names.map((name, i) => ({
+                name, score: scores[i], currentRating: players[name] || 1000
+            }));
 
-            calculateMultiplayerMatch(matchResults);
+            processMatch(results, date);
             e.target.reset();
-            // Keep at least 2 rows
+            document.getElementById('matchDate').valueAsDate = new Date();
             document.getElementById('playerRows').innerHTML = '';
             addPlayerRow(); addPlayerRow();
         });
 
-        // Initialize with 2 rows
         addPlayerRow(); addPlayerRow();
-        renderLeaderboard();
+        renderAll();
     </script>
 </body>
 </html>
