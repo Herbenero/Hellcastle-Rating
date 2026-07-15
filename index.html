@@ -74,20 +74,9 @@
   <section class="lg:col-span-1 card p-6 rounded-xl shadow-xl h-fit lg:sticky lg:top-8">
     <!-- ... (keep all your existing leaderboard code here) ... -->
             <h2 class="text-xl font-bold italic uppercase tracking-wider">⚔️ Record Match</h2>
-          <div class="flex gap-2">
-            <input
-              type="date"
-              id="matchDate"
-              class="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs focus:outline-none focus:border-red-500"
-            />
-            <button
-              type="button"
-              onclick="addPlayerRow()"
-              class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full border border-slate-500 transition-colors"
-            >
-              + Player
-            </button>
-          </div>
+          <div class="max-w-2xl mx-auto space-y-6">
+  <!-- Your single Record Match section and History Button will live here perfectly centered -->
+</div>
         </div>
 
         <form id="matchForm" class="space-y-4">
@@ -129,27 +118,7 @@
         </form>
       </section>
 
-      <!-- Leaderboard -->
-      <section class="lg:col-span-1 card p-6 rounded-xl shadow-xl h-fit lg:sticky lg:top-8">
-        <h2 class="text-xl font-bold mb-4 italic uppercase">🏆 HR Leaderboard</h2>
-        <div class="overflow-hidden">
-          <table class="w-full text-left">
-            <thead>
-              <tr class="text-slate-500 text-xs uppercase border-b border-slate-700">
-                <th class="pb-2">Player</th>
-                <th class="pb-2 text-right">HR</th>
-              </tr>
-            </thead>
-            <tbody id="leaderboardBody" class="divide-y divide-slate-800"></tbody>
-          </table>
-        </div>
-        <div id="emptyState" class="text-center py-8 text-slate-500 italic">No rankings yet.</div>
-      </section>
-
       
-    </div>
-  </div>
-
   <script>
     const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwGPOZhC-PRsuwt-wZ70QRxnZLExtnVROtRpJx8jLqniyM79DxMVFsFkKqVHHMWOiVmkg/exec";
     const K = 30;
