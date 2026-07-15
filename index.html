@@ -78,7 +78,25 @@
                     </form>
                 </div>
 
-                <!-- Match History -->
+                <!-- Leaderboard -->
+            <section class="card p-6 rounded-xl shadow-xl h-fit order-2 lg:order-none lg:sticky lg:top-8">
+                <h2 class="text-xl font-bold mb-4 italic uppercase">🏆 HR Leaderboard</h2>
+                <div class="overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-slate-500 text-xs uppercase border-b border-slate-700">
+                                <th class="pb-2">Player</th>
+                                <th class="pb-2 text-right">HR</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardBody" class="divide-y divide-slate-800"></tbody>
+                    </table>
+                </div>
+                <div id="emptyState" class="text-center py-8 text-slate-500 italic">No rankings yet.</div>
+            </section>
+        </div>
+    </div>
+    <!-- Match History -->
                 <div class="card p-6 rounded-xl shadow-xl order-3">
                     <h2 class="text-xl font-bold mb-4 italic uppercase">📜 Match History</h2>
                     <div class="overflow-x-auto">
@@ -98,24 +116,7 @@
                 </div>
             </section>
 
-            <!-- Leaderboard -->
-            <section class="card p-6 rounded-xl shadow-xl h-fit order-2 lg:order-none lg:sticky lg:top-8">
-                <h2 class="text-xl font-bold mb-4 italic uppercase">🏆 HR Leaderboard</h2>
-                <div class="overflow-hidden">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="text-slate-500 text-xs uppercase border-b border-slate-700">
-                                <th class="pb-2">Player</th>
-                                <th class="pb-2 text-right">HR</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboardBody" class="divide-y divide-slate-800"></tbody>
-                    </table>
-                </div>
-                <div id="emptyState" class="text-center py-8 text-slate-500 italic">No rankings yet.</div>
-            </section>
-        </div>
-    </div>
+            
 
     <script>
         const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwGPOZhC-PRsuwt-wZ70QRxnZLExtnVROtRpJx8jLqniyM79DxMVFsFkKqVHHMWOiVmkg/exec"; 
