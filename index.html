@@ -47,11 +47,38 @@
       <p class="text-slate-400">Match History & Multiplayer Tracker</p>
     </header>
 
-    <!-- UNIFIED GRID: Record Match + Leaderboard + Match History -->
-    <div class="grid lg:grid-cols-3 gap-6 lg:gap-8">
-      <!-- Record Match -->
-      <!-- Record Match -->
-<section class="lg:col-span-2 card p-6 rounded-xl shadow-xl h-fit">
+    <!-- UNIFIED GRID: Record Match + Leaderboard -->
+<div class="grid lg:grid-cols-3 gap-6 lg:gap-8 items-start">
+  
+  <!-- Left Column Container -->
+  <div class="lg:col-span-2 space-y-6">
+    
+    <!-- Record Match -->
+    <section class="card p-6 rounded-xl shadow-xl h-fit">
+      <!-- ... (keep all your existing form content here) ... -->
+      <form id="matchForm" class="space-y-4">
+        <!-- ... -->
+        <button type="submit" id="submitBtn" class="w-full btn-primary text-white font-bold py-4 rounded-lg uppercase tracking-widest" >
+          Process Match Results
+        </button>
+      </form>
+    </section>
+
+    <!-- View History Button Link -->
+    <div class="flex justify-center">
+      <a href="history.html" class="w-full text-center inline-flex justify-center items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-8 rounded-lg border border-slate-700 transition-all transform hover:-translate-y-0.5 uppercase tracking-wider text-sm shadow-lg">
+        📜 View Match History Page
+      </a>
+    </div>
+
+  </div> <!-- End Left Column Container -->
+
+  <!-- Leaderboard -->
+  <section class="lg:col-span-1 card p-6 rounded-xl shadow-xl h-fit lg:sticky lg:top-8">
+    <!-- ... (keep all your existing leaderboard code here) ... -->
+  </section>
+
+</div>
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-xl font-bold italic uppercase tracking-wider">⚔️ Record Match</h2>
           <div class="flex gap-2">
@@ -126,12 +153,7 @@
         <div id="emptyState" class="text-center py-8 text-slate-500 italic">No rankings yet.</div>
       </section>
 
-      <!-- View History Button Link -->
-<div class="lg:col-span-3 flex justify-center pt-4">
-  <a href="history.html" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-8 rounded-lg border border-slate-700 transition-all transform hover:-translate-y-0.5 uppercase tracking-wider text-sm shadow-lg">
-    📜 View Match History Page
-  </a>
-</div>
+      
     </div>
   </div>
 
