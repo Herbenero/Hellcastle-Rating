@@ -42,9 +42,10 @@
                             <div>
                                 <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Win Condition</label>
                                 <select id="winCondition" class="w-full bg-slate-800 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500">
-                                    <option value="high">High Score Wins</option>
-                                    <option value="low">Low Score Wins</option>
-                                </select>
+    <option value="high">High Score Wins</option>
+    <option value="low">Low Score Wins</option>
+    <option value="place">Lowest Place Wins (1st Wins)</option>
+</select>
                             </div>
                         </div>
 
@@ -101,6 +102,12 @@
         
         let players = {};
         let matchHistory = [];
+        // Around line 104 inside processMatch:
+const sortedResults = [...matchResults].sort((a, b) => {
+    if (winCondition === 'high') return b.score - a.score;
+    // For 'low' and 'place', sort ascending so 1st or lowest score comes first
+    return a.score - b.score;
+});
 
         document.getElementById('matchDate').valueAsDate = new Date();
 
@@ -114,7 +121,17 @@
                 </div>
                 <div class="col-span-4">
                     <input type="number" placeholder="Score" required class="p-score w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500 text-center">
-                </div>
+                </div>// Around line 118 inside processMatch loops:
+if (p1.score === p2.score) {
+    outcome = 0.5; // Tie match
+} else {
+    if (winCondition === 'high') {
+        outcome = (p1.score > p2.score) ? 1 : 0;
+    } else if (winCondition === 'low' || winCondition === 'place') {
+        // For both 'low' and 'place', the lesser numerical value is the superior result
+        outcome = (p1.score < p2.score) ? 1 : 0;
+    }
+}
                 <div class="col-span-1 text-right">
                     <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-slate-500 hover:text-red-500 text-xl">&times;</button>
                 </div>
