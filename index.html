@@ -43,9 +43,9 @@
             <p class="text-slate-400">Match History & Multiplayer Tracker</p>
         </header>
 
-        <div class="grid lg:grid-cols-3 gap-8">
+        <div class="grid lg:grid-cols-3 gap-6 lg:gap-8">
             <!-- Input Form -->
-            <section class="lg:col-span-2 space-y-8">
+            <section class="lg:col-span-2 space-y-8 flex flex-col order-1">
                 <div class="card p-6 rounded-xl shadow-xl">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xl font-bold italic uppercase tracking-wider">⚔️ Record Match</h2>
@@ -79,7 +79,7 @@
                 </div>
 
                 <!-- Match History -->
-                <div class="card p-6 rounded-xl shadow-xl">
+                <div class="card p-6 rounded-xl shadow-xl order-3">
                     <h2 class="text-xl font-bold mb-4 italic uppercase">📜 Match History</h2>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
@@ -99,7 +99,7 @@
             </section>
 
             <!-- Leaderboard -->
-            <section class="card p-6 rounded-xl shadow-xl h-fit sticky top-8">
+            <section class="card p-6 rounded-xl shadow-xl h-fit order-2 lg:order-none lg:sticky lg:top-8">
                 <h2 class="text-xl font-bold mb-4 italic uppercase">🏆 HR Leaderboard</h2>
                 <div class="overflow-hidden">
                     <table class="w-full text-left">
