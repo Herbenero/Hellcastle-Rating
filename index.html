@@ -5,25 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hellcastle Rating (HR)</title>
 
-  <!-- Basic favicon (multi-resolution .ico) -->
-  <link rel="icon" type="image/x-icon" href="PATH_TO/favicon.ico" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+  <link rel="manifest" href="site.webmanifest" />
 
-  <!-- PNG favicons for modern browsers / sizes -->
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="PATH_TO/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="48x48" href="PATH_TO/favicon-48x48.png" />
-
-  <!-- Apple / iOS touch icon -->
-  <link rel="apple-touch-icon" sizes="180x180" href="PATH_TO/apple-touch-icon.png" />
-
-  <!-- Android / Web app manifest -->
-  <link rel="manifest" href="PATH_TO/site.webmanifest" />
-
-  <!-- Windows / pinned site -->
   <meta name="msapplication-TileColor" content="#ef4444" />
-  <meta name="msapplication-TileImage" content="PATH_TO/mstile-144x144.png" />
-
-  <!-- Browser UI theme color -->
+  <meta name="msapplication-TileImage" content="mstile-144x144.png" />
   <meta name="theme-color" content="#ef4444" />
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -33,8 +23,10 @@
     .accent { color: #ef4444; }
     .btn-primary { background-color: #ef4444; transition: all 0.2s; }
     .btn-primary:hover { background-color: #dc2626; transform: translateY(-1px); }
+    .btn-primary:disabled { background-color: #7f1d1d; cursor: not-allowed; transform: none; }
     input::-webkit-outer-spin-button,
     input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type="number"] { -moz-appearance: textfield; }
     ::-webkit-calendar-picker-indicator { filter: invert(1); }
   </style>
 </head>
@@ -47,70 +39,123 @@
       <p class="text-slate-400">Match History & Multiplayer Tracker</p>
     </header>
 
-    <!-- Centered Layout Wrapper -->
-  <div class="max-w-2xl mx-auto space-y-6">
-
-    <!-- Record Match -->
-    <section class="card p-6 rounded-xl shadow-xl h-fit">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-bold italic uppercase tracking-wider">⚔️ Record Match</h2>
-        <div class="flex gap-2">
-          <input type="date" id="matchDate" class="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs focus:outline-none focus:border-red-500" />
-          <button type="button" onclick="addPlayerRow()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full border border-slate-500 transition-colors"> + Player </button>
-        </div>
-      </div>
-      <form id="matchForm" class="space-y-4">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Game Played</label>
-            <input type="text" id="gameName" placeholder="e.g. Catan, Golf, Poker" required class="w-full bg-slate-800 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500" />
+    <div class="grid lg:grid-cols-3 gap-6 lg:gap-8 items-start">
+      <div class="lg:col-span-2 space-y-6">
+        <section class="card p-6 rounded-xl shadow-xl">
+          <div class="flex items-center justify-between gap-4 mb-6">
+            <h2 class="text-xl font-bold italic uppercase tracking-wider">⚔️ Record Match</h2>
+            <button
+              type="button"
+              id="addPlayerBtn"
+              class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded-lg border border-slate-700 transition-colors"
+            >
+              + Add Player
+            </button>
           </div>
-          <div>
-            <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Win Condition</label>
-            <select id="winCondition" class="w-full bg-slate-800 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500">
-              <option value="high">High Score Wins</option>
-              <option value="low">Low Score Wins</option>
-              <option value="place">Lowest Place Wins (1st Wins)</option>
-            </select>
+
+          <form id="matchForm" class="space-y-4">
+            <div class="grid md:grid-cols-3 gap-4">
+              <div>
+                <label for="matchDate" class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Match Date</label>
+                <input
+                  type="date"
+                  id="matchDate"
+                  required
+                  class="w-full bg-slate-800 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500"
+                />
+              </div>
+              <div class="md:col-span-2">
+                <label for="gameName" class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Game Played</label>
+                <input
+                  type="text"
+                  id="gameName"
+                  placeholder="e.g. Catan, Golf, Poker"
+                  required
+                  class="w-full bg-slate-800 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label for="winCondition" class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Win Condition</label>
+              <select
+                id="winCondition"
+                class="w-full bg-slate-800 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500"
+              >
+                <option value="high">High Score Wins</option>
+                <option value="low">Low Score Wins</option>
+                <option value="place">Lowest Place Wins (1st Wins)</option>
+              </select>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-[10px] uppercase text-slate-500 font-bold block">Players</label>
+                <span class="text-xs text-slate-500">Minimum 2 players</span>
+              </div>
+              <div id="playerRows" class="space-y-3"></div>
+            </div>
+
+            <button
+              type="submit"
+              id="submitBtn"
+              class="w-full btn-primary text-white font-bold py-4 rounded-lg uppercase tracking-widest"
+            >
+              Process Match Results
+            </button>
+          </form>
+        </section>
+
+        <div class="flex justify-center">
+          <a
+            href="history.html"
+            class="w-full text-center inline-flex justify-center items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-8 rounded-lg border border-slate-700 transition-colors"
+          >
+            📜 View Match History Page
+          </a>
+        </div>
+
+        <section class="card p-6 rounded-xl shadow-xl">
+          <h2 class="text-xl font-bold mb-6 italic uppercase tracking-wider">📜 Recent Matches</h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="text-slate-500 text-xs uppercase border-b border-slate-700">
+                  <th class="pb-3">Date</th>
+                  <th class="pb-3">Game</th>
+                  <th class="pb-3">Result Summary</th>
+                </tr>
+              </thead>
+              <tbody id="historyBody" class="divide-y divide-slate-800">
+                <tr>
+                  <td colspan="3" class="text-center py-4 text-slate-500">Loading matches from cloud...</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </div>
-        <div id="playerRows" class="space-y-3 mb-6">
-          <!-- Rows dynamically populated by JavaScript -->
-        </div>
-        <button type="submit" id="submitBtn" class="w-full btn-primary text-white font-bold py-4 rounded-lg uppercase tracking-widest">
-          Process Match Results
-        </button>
-      </form>
-    </section>
-
-    <!-- HR Leaderboard (Stacked on Left Column) -->
-    <section class="card p-6 rounded-xl shadow-xl h-fit">
-      <h2 class="text-xl font-bold mb-4 italic uppercase tracking-wider">🏆 HR Leaderboard</h2>
-      <div class="overflow-hidden">
-        <table class="w-full text-left text-sm">
-          <thead>
-            <tr class="text-slate-500 text-xs uppercase border-b border-slate-700">
-              <th class="pb-2 w-12">#</th>
-              <th class="pb-2">Player</th>
-              <th class="pb-2 text-right">HR</th>
-            </tr>
-          </thead>
-          <tbody id="leaderboardBody" class="divide-y divide-slate-800">
-            <!-- Dynamic place rankings populated by Javascript -->
-          </tbody>
-        </table>
+        </section>
       </div>
-      <div id="emptyState" class="text-center py-8 text-slate-500 italic">No rankings yet.</div>
-    </section>
 
-    <!-- View History Button Link -->
-    <div class="flex justify-center">
-      <a href="history.html" class="w-full text-center inline-flex justify-center items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-8 rounded-lg border border-slate-700 transition-all transform hover:-translate-y-0.5 uppercase tracking-wider text-sm shadow-lg">
-        📜 View Match History Page
-      </a>
+      <section class="lg:col-span-1 card p-6 rounded-xl shadow-xl h-fit lg:sticky lg:top-8">
+        <h2 class="text-xl font-bold mb-6 italic uppercase tracking-wider">🏆 Leaderboard</h2>
+        <div id="emptyState" class="text-slate-500 text-sm text-center py-6">
+          No players ranked yet.
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="text-slate-500 text-xs uppercase border-b border-slate-700">
+                <th class="pb-3">Player</th>
+                <th class="pb-3 text-right">HR</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboardBody" class="divide-y divide-slate-800"></tbody>
+          </table>
+        </div>
+      </section>
     </div>
+  </div>
 
-  </div> <!-- End Centered Layout Wrapper -->
   <script>
     const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbyL6KM6fUSJea29AEwoVV9Cve80nY9IDD49Ll-yhBunvsDh32mJMeJbZyaCsZiKOWuzVQ/exec";
     const K = 30;
@@ -118,24 +163,48 @@
     let players = {};
     let matchHistory = [];
 
-    document.getElementById('matchDate').valueAsDate = new Date();
+    function setToday() {
+      const matchDate = document.getElementById('matchDate');
+      if (matchDate) {
+        matchDate.valueAsDate = new Date();
+      }
+    }
 
-    function addPlayerRow() {
+    function addPlayerRow(name = '', score = '') {
       const container = document.getElementById('playerRows');
       const row = document.createElement('div');
-      row.className = "grid grid-cols-12 gap-3 items-center player-row animate-in fade-in slide-in-from-left-2 duration-200";
+      row.className = 'grid grid-cols-12 gap-3 items-center player-row';
       row.innerHTML = `
         <div class="col-span-7">
-          <input type="text" placeholder="Player Name" required class="p-name w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500">
+          <input type="text" placeholder="Player Name" value="${name}" required class="p-name w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500">
         </div>
         <div class="col-span-4">
-          <input type="number" placeholder="Score / Place" required class="p-score w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500 text-center">
+          <input type="number" step="any" placeholder="Score / Place" value="${score}" required class="p-score w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500 text-center">
         </div>
         <div class="col-span-1 text-right">
-          <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-slate-500 hover:text-red-500 text-xl">&times;</button>
+          <button type="button" class="remove-player text-slate-500 hover:text-red-500 text-xl">&times;</button>
         </div>
       `;
+
+      row.querySelector('.remove-player').addEventListener('click', () => {
+        const rows = document.querySelectorAll('.player-row');
+        if (rows.length <= 2) {
+          alert('At least 2 players are required.');
+          return;
+        }
+        row.remove();
+      });
+
       container.appendChild(row);
+    }
+
+    function resetForm() {
+      document.getElementById('gameName').value = '';
+      document.getElementById('winCondition').value = 'high';
+      document.getElementById('playerRows').innerHTML = '';
+      setToday();
+      addPlayerRow();
+      addPlayerRow();
     }
 
     function getExpectedScore(ra, rb) {
@@ -147,13 +216,14 @@
         const response = await fetch(SHEET_API_URL);
         const rawMatches = await response.json();
 
-        // Process chronologically to properly scale historical Elo progression
         rawMatches.sort((a, b) => new Date(a.date) - new Date(b.date));
 
         players = {};
         matchHistory = [];
 
         rawMatches.forEach(match => {
+          if (!match.results || match.results.length < 2) return;
+
           const numPlayers = match.results.length;
           const ratingChanges = {};
 
@@ -162,58 +232,56 @@
             if (!players[p.name]) players[p.name] = 1000;
           });
 
-          // Evaluate multiplayer groups as independent head-to-head pairings
-      for (let i = 0; i < numPlayers; i++) {
-        for (let j = i + 1; j < numPlayers; j++) {
-          const p1 = match.results[i];
-          const p2 = match.results[j];
-          const r1 = players[p1.name];
-          const r2 = players[p2.name];
-          const ea = getExpectedScore(r1, r2);
-          
-          let outcome;
-          if (p1.score === p2.score) {
-            outcome = 0.5;
-          } else {
-            if (match.winCondition === 'high') {
-              outcome = (p1.score > p2.score) ? 1 : 0;
-            } else if (match.winCondition === 'low' || match.winCondition === 'place') {
-              outcome = (p1.score < p2.score) ? 1 : 0;
+          for (let i = 0; i < numPlayers; i++) {
+            for (let j = i + 1; j < numPlayers; j++) {
+              const p1 = match.results[i];
+              const p2 = match.results[j];
+              const r1 = players[p1.name];
+              const r2 = players[p2.name];
+              const ea = getExpectedScore(r1, r2);
+
+              let outcome;
+              if (p1.score === p2.score) {
+                outcome = 0.5;
+              } else if (match.winCondition === 'high') {
+                outcome = p1.score > p2.score ? 1 : 0;
+              } else {
+                outcome = p1.score < p2.score ? 1 : 0;
+              }
+
+              const scoreDiff = Math.abs(p1.score - p2.score);
+              const movMultiplier = Math.max(1, Math.min(Math.log(scoreDiff + 1), 3.0));
+              const winChange = (K / (numPlayers - 1)) * movMultiplier * (outcome - ea);
+
+              ratingChanges[p1.name] += winChange;
+              ratingChanges[p2.name] -= winChange;
             }
           }
-
-          // 1. Calculate the absolute score difference
-          const scoreDiff = Math.abs(p1.score - p2.score);
-          
-          // 2. Apply logarithmic margin of victory multiplier with a hard cap of 3.0
-          const movMultiplier = Math.min(Math.log(scoreDiff + 1), 3.0);
-
-          // 3. Scale the winChange update using the multiplier
-          let winChange = (K / (numPlayers - 1)) * movMultiplier * (outcome - ea);
-          
-          ratingChanges[p1.name] += winChange;
-          ratingChanges[p2.name] -= winChange;
-        }
-      }
 
           for (const name in ratingChanges) {
             players[name] = Math.round(players[name] + ratingChanges[name]);
           }
 
-          // Sort history views correctly based on custom rule mechanics
           const sortedResults = [...match.results].sort((a, b) => {
             if (match.winCondition === 'high') return b.score - a.score;
             return a.score - b.score;
           });
 
-          const summary = sortedResults.map(p => `${p.name} (${p.score})`).join(", ");
-          matchHistory.unshift({ date: match.date, game: match.gameName, summary });
+          const summary = sortedResults.map(p => `${p.name} (${p.score})`).join(', ');
+          matchHistory.unshift({
+            date: match.date,
+            game: match.gameName,
+            summary
+          });
         });
 
         renderAll();
       } catch (err) {
-        console.error("Cloud fetch failed:", err);
-        document.getElementById('historyBody').innerHTML = `<tr><td colspan="3" class="text-center py-4 text-red-400">Error syncing storage online.</td></tr>`;
+        console.error('Cloud fetch failed:', err);
+        const historyBody = document.getElementById('historyBody');
+        if (historyBody) {
+          historyBody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-red-400">Error syncing storage online.</td></tr>';
+        }
       }
     }
 
@@ -221,40 +289,31 @@
       renderLeaderboard();
       renderHistory();
     }
-}
 
-function renderLeaderboard() {
-  const tbody = document.getElementById('leaderboardBody');
-  const empty = document.getElementById('emptyState');
-  
-  if (!tbody) return; // Guard in case the element is missing
-  tbody.innerHTML = '';
-  
-  const sorted = Object.entries(players).sort((a, b) => b[1] - a[1]);
-  
-  if (sorted.length > 0) {
-    if (empty) empty.classList.add('hidden');
-    sorted.forEach(([name, hr], index) => {
-      const place = index + 1;
-      tbody.innerHTML += `
-        <tr class="hover:bg-slate-800/30 transition-colors">
-          <td class="py-3 font-bold text-xs text-slate-500 w-12">#${place}</td>
-          <td class="py-3 font-medium">${name}</td>
-          <td class="py-3 text-right font-bold text-red-500">${hr}</td>
-        </tr>
-      `;
-    });
-  } else {
-    if (empty) empty.classList.remove('hidden');
-  }
-}
+    function renderLeaderboard() {
+      const tbody = document.getElementById('leaderboardBody');
+      const empty = document.getElementById('emptyState');
+      tbody.innerHTML = '';
+
+      const sorted = Object.entries(players).sort((a, b) => b[1] - a[1]);
+
+      if (sorted.length > 0) {
+        empty.classList.add('hidden');
+        sorted.forEach(([name, hr]) => {
+          tbody.innerHTML += `<tr><td class="py-3 font-medium">${name}</td><td class="py-3 text-right font-bold accent">${hr}</td></tr>`;
+        });
+      } else {
+        empty.classList.remove('hidden');
+      }
+    }
 
     function renderHistory() {
       const tbody = document.getElementById('historyBody');
       if (matchHistory.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-slate-500">No matches found.</td></tr>`;
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-slate-500">No matches found.</td></tr>';
         return;
       }
+
       tbody.innerHTML = matchHistory.map(item => `
         <tr class="hover:bg-slate-800/50 transition-colors">
           <td class="py-3 font-mono text-xs text-slate-400">${item.date}</td>
@@ -263,6 +322,8 @@ function renderLeaderboard() {
         </tr>
       `).join('');
     }
+
+    document.getElementById('addPlayerBtn').addEventListener('click', () => addPlayerRow());
 
     document.getElementById('matchForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -274,11 +335,28 @@ function renderLeaderboard() {
       const names = Array.from(document.querySelectorAll('.p-name')).map(i => i.value.trim());
       const scores = Array.from(document.querySelectorAll('.p-score')).map(i => parseFloat(i.value));
 
-      if (names.length < 2) { alert("Enter at least 2 players."); return; }
-      if (new Set(names).size !== names.length) { alert("Duplicate player names detected."); return; }
+      if (names.length < 2) {
+        alert('Enter at least 2 players.');
+        return;
+      }
+
+      if (names.some(name => !name)) {
+        alert('All player names are required.');
+        return;
+      }
+
+      if (scores.some(score => Number.isNaN(score))) {
+        alert('All scores/places must be valid numbers.');
+        return;
+      }
+
+      if (new Set(names).size !== names.length) {
+        alert('Duplicate player names detected.');
+        return;
+      }
 
       submitBtn.disabled = true;
-      submitBtn.innerText = "SAVING TO CLOUD...";
+      submitBtn.innerText = 'SAVING TO CLOUD...';
 
       const payload = {
         date,
@@ -288,31 +366,28 @@ function renderLeaderboard() {
       };
 
       try {
-  await fetch(SHEET_API_URL, {
-    method: "POST",
-    mode: "cors",       // Use standard cors mode
-    redirect: "follow", // Crucial: tell the browser to follow Google's redirect
-    headers: {
-      "Content-Type": "text/plain;charset=utf-8" // Bypasses CORS preflight checks
-    },
-    body: JSON.stringify(payload)
-  });
+        await fetch(SHEET_API_URL, {
+          method: 'POST',
+          mode: 'cors',
+          redirect: 'follow',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify(payload)
+        });
 
-  // Reset form on success...
-  document.getElementById('gameName').value = '';
-  document.getElementById('playerRows').innerHTML = '';
-  document.getElementById('matchDate').valueAsDate = new Date();
-  addPlayerRow();
-  addPlayerRow();
-  await loadMatchesFromCloud();
-
-} catch (err) {
-  alert("Could not connect to online storage server.");
-  console.error(err);
-}
+        resetForm();
+        await loadMatchesFromCloud();
+      } catch (err) {
+        alert('Could not connect to online storage server.');
+        console.error(err);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'PROCESS MATCH RESULTS';
+      }
     });
 
-    // Initialize application layout
+    setToday();
     addPlayerRow();
     addPlayerRow();
     loadMatchesFromCloud();
