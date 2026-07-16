@@ -82,7 +82,30 @@
         </button>
       </form>
     </section>
+</section>
 
+    <!-- HR Leaderboard (Stacked on Left Column) -->
+    <section class="card p-6 rounded-xl shadow-xl h-fit">
+      <h2 class="text-xl font-bold mb-4 italic uppercase tracking-wider">🏆 HR Leaderboard</h2>
+      <div class="overflow-hidden">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="text-slate-500 text-xs uppercase border-b border-slate-700">
+              <th class="pb-2 w-12">#</th>
+              <th class="pb-2">Player</th>
+              <th class="pb-2 text-right">HR</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody" class="divide-y divide-slate-800">
+            <!-- Dynamic place rankings populated by Javascript -->
+          </tbody>
+        </table>
+      </div>
+      <div id="emptyState" class="text-center py-8 text-slate-500 italic">No rankings yet.</div>
+    </section>
+
+    <!-- View History Button Link -->
+    <div class="flex justify-center">
     <!-- View History Button Link -->
     <div class="flex justify-center">
       <a href="history.html" class="w-full text-center inline-flex justify-center items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-8 rounded-lg border border-slate-700 transition-all transform hover:-translate-y-0.5 uppercase tracking-wider text-sm shadow-lg">
@@ -203,27 +226,34 @@
       renderHistory();
     }
 
-    function renderLeaderboard() {
+    function renderAll() {
+  renderLeaderboard();
+  renderHistory();
+}
+
+function renderLeaderboard() {
   const tbody = document.getElementById('leaderboardBody');
   const empty = document.getElementById('emptyState');
+  
+  if (!tbody) return; // Guard in case the element is missing
   tbody.innerHTML = '';
   
   const sorted = Object.entries(players).sort((a, b) => b[1] - a[1]);
   
   if (sorted.length > 0) {
-    empty.classList.add('hidden');
+    if (empty) empty.classList.add('hidden');
     sorted.forEach(([name, hr], index) => {
       const place = index + 1;
       tbody.innerHTML += `
         <tr class="hover:bg-slate-800/30 transition-colors">
           <td class="py-3 font-bold text-xs text-slate-500 w-12">#${place}</td>
           <td class="py-3 font-medium">${name}</td>
-          <td class="py-3 text-right font-bold accent">${hr}</td>
+          <td class="py-3 text-right font-bold text-red-500">${hr}</td>
         </tr>
       `;
     });
   } else {
-    empty.classList.remove('hidden');
+    if (empty) empty.classList.remove('hidden');
   }
 }
 
