@@ -116,9 +116,10 @@
           <table class="w-full text-left">
             <thead>
               <tr class="text-slate-500 text-xs uppercase border-b border-slate-700">
-                <th class="pb-2">Player</th>
-                <th class="pb-2 text-right">HR</th>
-              </tr>
+  <th class="pb-2 w-12">#</th>
+  <th class="pb-2">Player</th>
+  <th class="pb-2 text-right">HR</th>
+</tr>
             </thead>
             <tbody id="leaderboardBody" class="divide-y divide-slate-800"></tbody>
           </table>
@@ -247,20 +248,28 @@
     }
 
     function renderLeaderboard() {
-      const tbody = document.getElementById('leaderboardBody');
-      const empty = document.getElementById('emptyState');
-      tbody.innerHTML = '';
-      const sorted = Object.entries(players).sort((a, b) => b[1] - a[1]);
-
-      if (sorted.length > 0) {
-        empty.classList.add('hidden');
-        sorted.forEach(([name, hr]) => {
-          tbody.innerHTML += `<tr><td class="py-3 font-medium">${name}</td><td class="py-3 text-right font-bold accent">${hr}</td></tr>`;
-        });
-      } else {
-        empty.classList.remove('hidden');
-      }
-    }
+  const tbody = document.getElementById('leaderboardBody');
+  const empty = document.getElementById('emptyState');
+  tbody.innerHTML = '';
+  
+  const sorted = Object.entries(players).sort((a, b) => b[1] - a[1]);
+  
+  if (sorted.length > 0) {
+    empty.classList.add('hidden');
+    sorted.forEach(([name, hr], index) => {
+      const place = index + 1;
+      tbody.innerHTML += `
+        <tr class="hover:bg-slate-800/30 transition-colors">
+          <td class="py-3 font-bold text-xs text-slate-500 w-12">#${place}</td>
+          <td class="py-3 font-medium">${name}</td>
+          <td class="py-3 text-right font-bold accent">${hr}</td>
+        </tr>
+      `;
+    });
+  } else {
+    empty.classList.remove('hidden');
+  }
+}
 
     function renderHistory() {
       const tbody = document.getElementById('historyBody');
