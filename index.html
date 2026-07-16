@@ -47,93 +47,50 @@
       <p class="text-slate-400">Match History & Multiplayer Tracker</p>
     </header>
 
-    <!-- UNIFIED GRID: Record Match + Leaderboard + Match History -->
-    <div class="grid lg:grid-cols-3 gap-6 lg:gap-8">
-      <!-- Record Match -->
-<section class="lg:col-span-2 card p-6 rounded-xl shadow-xl h-fit">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-bold italic uppercase tracking-wider">⚔️ Record Match</h2>
-          <div class="flex gap-2">
-            <input
-              type="date"
-              id="matchDate"
-              class="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs focus:outline-none focus:border-red-500"
-            />
-            <button
-              type="button"
-              onclick="addPlayerRow()"
-              class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full border border-slate-500 transition-colors"
-            >
-              + Player
-            </button>
+    <!-- Centered Layout Wrapper -->
+  <div class="max-w-2xl mx-auto space-y-6">
+
+    <!-- Record Match -->
+    <section class="card p-6 rounded-xl shadow-xl h-fit">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold italic uppercase tracking-wider">⚔️ Record Match</h2>
+        <div class="flex gap-2">
+          <input type="date" id="matchDate" class="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs focus:outline-none focus:border-red-500" />
+          <button type="button" onclick="addPlayerRow()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full border border-slate-500 transition-colors" > + Player </button>
+        </div>
+      </div>
+      <form id="matchForm" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Game Played</label>
+            <input type="text" id="gameName" placeholder="e.g. Catan, Golf, Poker" required class="w-full bg-slate-800 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500" />
+          </div>
+          <div>
+            <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Win Condition</label>
+            <select id="winCondition" class="w-full bg-slate-800 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500" >
+              <option value="high">High Score Wins</option>
+              <option value="low">Low Score Wins</option>
+              <option value="place">Lowest Place Wins (1st Wins)</option>
+            </select>
           </div>
         </div>
-
-        <form id="matchForm" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Game Played</label>
-              <input
-                type="text"
-                id="gameName"
-                placeholder="e.g. Catan, Golf, Poker"
-                required
-                class="w-full bg-slate-800 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500"
-              />
-            </div>
-            <div>
-              <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Win Condition</label>
-              <select
-                id="winCondition"
-                class="w-full bg-slate-800 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500"
-              >
-                <option value="high">High Score Wins</option>
-                <option value="low">Low Score Wins</option>
-                <option value="place">Lowest Place Wins (1st Wins)</option>
-              </select>
-            </div>
-          </div>
-
-          <div id="playerRows" class="space-y-3 mb-6">
-            <!-- Rows dynamically populated by JavaScript -->
-          </div>
-
-          <button
-            type="submit"
-            id="submitBtn"
-            class="w-full btn-primary text-white font-bold py-4 rounded-lg uppercase tracking-widest"
-          >
-            Process Match Results
-          </button>
-        </form>
-      </section>
-
-      <!-- Leaderboard -->
-      <section class="lg:col-span-1 card p-6 rounded-xl shadow-xl h-fit lg:sticky lg:top-8">
-        <h2 class="text-xl font-bold mb-4 italic uppercase">🏆 HR Leaderboard</h2>
-        <div class="overflow-hidden">
-          <table class="w-full text-left">
-            <thead>
-              <tr class="text-slate-500 text-xs uppercase border-b border-slate-700">
-  <th class="pb-2 w-12">#</th>
-  <th class="pb-2">Player</th>
-  <th class="pb-2 text-right">HR</th>
-</tr>
-            </thead>
-            <tbody id="leaderboardBody" class="divide-y divide-slate-800"></tbody>
-          </table>
+        <div id="playerRows" class="space-y-3 mb-6">
+          <!-- Rows dynamically populated by JavaScript -->
         </div>
-        <div id="emptyState" class="text-center py-8 text-slate-500 italic">No rankings yet.</div>
-      </section>
+        <button type="submit" id="submitBtn" class="w-full btn-primary text-white font-bold py-4 rounded-lg uppercase tracking-widest" >
+          Process Match Results
+        </button>
+      </form>
+    </section>
 
-      <!-- View History Button Link -->
-<div class="lg:col-span-3 flex justify-center pt-4">
-  <a href="history.html" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-8 rounded-lg border border-slate-700 transition-all transform hover:-translate-y-0.5 uppercase tracking-wider text-sm shadow-lg">
-    📜 View Match History Page
-  </a>
-</div>
+    <!-- View History Button Link -->
+    <div class="flex justify-center">
+      <a href="history.html" class="w-full text-center inline-flex justify-center items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-8 rounded-lg border border-slate-700 transition-all transform hover:-translate-y-0.5 uppercase tracking-wider text-sm shadow-lg">
+        📜 View Match History Page
+      </a>
     </div>
-  </div>
+
+  </div> <!-- End Centered Layout Wrapper -->
 
   <script>
     const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbyL6KM6fUSJea29AEwoVV9Cve80nY9IDD49Ll-yhBunvsDh32mJMeJbZyaCsZiKOWuzVQ/exec";
