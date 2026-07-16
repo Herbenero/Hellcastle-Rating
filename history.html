@@ -3,7 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Match History - Hellcastle Rating</title>
+  <title>Hellcastle Rating (HR)</title>
+
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png.png" />
+  <link rel="icon" type="image/png" sizes="64x64" href="favicon-64x64.png.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png.png" />
+  <meta name="msapplication-TileColor" content="#ef4444" />
+  <meta name="theme-color" content="#ef4444" />
+
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
@@ -21,8 +30,6 @@
 </head>
 <body class="p-4 md:p-8">
   <div class="max-w-4xl mx-auto">
-    
-    <!-- Header with Back Nav -->
     <header class="mb-8 flex flex-col sm:flex-row justify-between items-center gap-4">
       <div>
         <h1 class="text-3xl font-black tracking-tighter uppercase italic">
@@ -35,7 +42,6 @@
       </a>
     </header>
 
-    <!-- Match History Card -->
     <section class="card p-6 rounded-xl shadow-xl">
       <h2 class="text-xl font-bold mb-6 italic uppercase tracking-wider">📜 Match History</h2>
       <div class="overflow-x-auto">
@@ -55,39 +61,37 @@
         </table>
       </div>
     </section>
-
   </div>
 
   <script>
-    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbyL6KM6fUSJea29AEwoVV9Cve80nY9IDD49Ll-yhBunvsDh32mJMeJbZyaCsZiKOWuzVQ/exec";
+    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwGPOZhC-PRsuwt-wZ70QRxnZLExtnVROtRpJx8jLqniyM79DxMVFsFkKqVHHMWOiVmkg/exec";
     let matchHistory = [];
 
     async function loadMatchesFromCloud() {
       try {
         const response = await fetch(SHEET_API_URL);
         const rawMatches = await response.json();
-        
-        // Sort chronologically
+
         rawMatches.sort((a, b) => new Date(a.date) - new Date(b.date));
-        
+
         matchHistory = [];
         rawMatches.forEach(match => {
           const sortedResults = [...match.results].sort((a, b) => {
             if (match.winCondition === 'high') return b.score - a.score;
             return a.score - b.score;
           });
-          
-          const summary = sortedResults.map(p => `${p.name} (${p.score})`).join(", ");
+
+          const summary = sortedResults.map(p => `${p.name} (${p.score})`).join(', ');
           matchHistory.unshift({
             date: match.date,
             game: match.gameName,
             summary
           });
         });
-        
+
         renderHistory();
       } catch (err) {
-        console.error("Cloud fetch failed:", err);
+        console.error('Cloud fetch failed:', err);
         document.getElementById('historyBody').innerHTML = `
           <tr>
             <td colspan="3" class="text-center py-8 text-red-400">
@@ -100,10 +104,10 @@
     function renderHistory() {
       const tbody = document.getElementById('historyBody');
       if (matchHistory.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="3" class="text-center py-8 text-slate-500">No matches found.</td></tr>`;
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center py-8 text-slate-500">No matches found.</td></tr>';
         return;
       }
-      
+
       tbody.innerHTML = matchHistory.map(item => `
         <tr class="hover:bg-slate-800/50 transition-colors">
           <td class="py-4 font-mono text-xs text-slate-400">${item.date}</td>
@@ -113,7 +117,6 @@
       `).join('');
     }
 
-    // Run on load
     loadMatchesFromCloud();
   </script>
 </body>

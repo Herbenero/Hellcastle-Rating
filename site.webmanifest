@@ -1,0 +1,39 @@
+{
+  "name": "Hellcastle Rating",
+  "short_name": "Hellcastle",
+  "icons": [
+    {
+      "src": "favicon-16x16.png.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon-32x32.png.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon-48x48.png.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon-64x64.png.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "apple-touch-icon.png.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#ef4444",
+  "background_color": "#0f172a",
+  "display": "standalone"
+}
