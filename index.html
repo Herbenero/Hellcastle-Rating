@@ -136,7 +136,7 @@
   </div>
 
   <script>
-    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwGPOZhC-PRsuwt-wZ70QRxnZLExtnVROtRpJx8jLqniyM79DxMVFsFkKqVHHMWOiVmkg/exec";
+    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbzL_2kPEl8YPrZwgJQsDEYNEsufULHM1HJPKg3-pxEECQu89POmdIpG_C7tIQT4gEniAw/exec";
     const K = 30;
 
     let players = {};
@@ -301,27 +301,28 @@
       };
 
       try {
-        await fetch(SHEET_API_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
+  await fetch(SHEET_API_URL, {
+    method: "POST",
+    mode: "cors",       // Use standard cors mode
+    redirect: "follow", // Crucial: tell the browser to follow Google's redirect
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8" // Bypasses CORS preflight checks
+    },
+    body: JSON.stringify(payload)
+  });
 
-        document.getElementById('gameName').value = '';
-        document.getElementById('playerRows').innerHTML = '';
-        document.getElementById('matchDate').valueAsDate = new Date();
-        addPlayerRow();
-        addPlayerRow();
+  // Reset form on success...
+  document.getElementById('gameName').value = '';
+  document.getElementById('playerRows').innerHTML = '';
+  document.getElementById('matchDate').valueAsDate = new Date();
+  addPlayerRow();
+  addPlayerRow();
+  await loadMatchesFromCloud();
 
-        await loadMatchesFromCloud();
-      } catch (err) {
-        alert("Could not connect to online storage server.");
-        console.error(err);
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerText = "PROCESS MATCH RESULTS";
-      }
+} catch (err) {
+  alert("Could not connect to online storage server.");
+  console.error(err);
+}
     });
 
     // Initialize application layout
