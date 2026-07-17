@@ -133,270 +133,231 @@
   </div>
 
   <script>
-    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbzoMkFIA4IvwV0ybCsdcfIniDxW5HkZChARd9CddPrh_yOn1WUg5ziOnSkSk6u0-56Eug/exec";
-    const K = 30;
+  const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbzoMkFIA4IvwV0ybCsdcfIniDxW5HkZChARd9CddPrh_yOn1WUg5ziOnSkSk6u0-56Eug/exec";
+  const K = 30;
+  let players = {};
 
-    let players = {};
+  function setToday() {
+    const matchDate = document.getElementById('matchDate');
+    if (matchDate) {
+      matchDate.valueAsDate = new Date();
+    }
+  }
 
-    function setToday() {
-      const matchDate = document.getElementById('matchDate');
-      if (matchDate) {
-        matchDate.valueAsDate = new Date();
+  function addPlayerRow(name = '', score = '') {
+    const container = document.getElementById('playerRows');
+    const row = document.createElement('div');
+    row.className = 'grid grid-cols-12 gap-3 items-center player-row';
+    row.innerHTML = `
+      <div class="col-span-7">
+        <input type="text" placeholder="Player Name" value="${name}" required class="p-name w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500">
+      </div>
+      <div class="col-span-4 score-container">
+        <input type="number" step="any" placeholder="Score / Place" value="${score}" required class="p-score w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500 text-center">
+      </div>
+      <div class="col-span-4 winner-container hidden text-center">
+        <label class="inline-flex items-center gap-2 cursor-pointer text-sm justify-center w-full">
+          <input type="radio" name="noscore-winner" class="p-winner accent-red-500 w-4 h-4">
+          <span class="text-slate-400">Winner</span>
+        </label>
+      </div>
+      <div class="col-span-1 text-right">
+        <button type="button" class="remove-player text-slate-500 hover:text-red-500 text-xl">&times;</button>
+      </div>
+    `;
+
+    row.querySelector('.remove-player').addEventListener('click', () => {
+      const rows = document.querySelectorAll('.player-row');
+      if (rows.length <= 2) {
+        alert('At least 2 players are required.');
+        return;
       }
-    }
-
-    function addPlayerRow(name = '', score = '') {
-  const container = document.getElementById('playerRows');
-  const row = document.createElement('div');
-  row.className = 'grid grid-cols-12 gap-3 items-center player-row';
-  row.innerHTML = `
-    <div class="col-span-7">
-      <input type="text" placeholder="Player Name" value="${name}" required class="p-name w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500">
-    </div>
-    <div class="col-span-4 score-container">
-      <input type="number" step="any" placeholder="Score / Place" value="${score}" required class="p-score w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-red-500 text-center">
-    </div>
-    <div class="col-span-4 winner-container hidden text-center">
-      <label class="inline-flex items-center gap-2 cursor-pointer text-sm justify-center w-full">
-        <input type="radio" name="noscore-winner" class="p-winner accent-red-500 w-4 h-4">
-        <span class="text-slate-400">Winner</span>
-      </label>
-    </div>
-    <div class="col-span-1 text-right">
-      <button type="button" class="remove-player text-slate-500 hover:text-red-500 text-xl">&times;</button>
-    </div>
-  `;
-  
-  row.querySelector('.remove-player').addEventListener('click', () => {
-    const rows = document.querySelectorAll('.player-row');
-    if (rows.length <= 2) {
-      alert('At least 2 players are required.');
-      return;
-    }
-    row.remove();
-  });
-  
-  container.appendChild(row);
-  toggleScoreInputs(); // Sync input layout with the active dropdown option
-}
-function toggleScoreInputs() {
-  const winCond = document.getElementById('winCondition').value;
-  const scoreContainers = document.querySelectorAll('.score-container');
-  const winnerContainers = document.querySelectorAll('.winner-container');
-  const scoreInputs = document.querySelectorAll('.p-score');
-
-  if (winCond === 'noscore') {
-    scoreContainers.forEach(el => el.classList.add('hidden'));
-    winnerContainers.forEach(el => el.classList.remove('hidden'));
-    scoreInputs.forEach(el => el.removeAttribute('required'));
-  } else {
-    scoreContainers.forEach(el => el.classList.remove('hidden'));
-    winnerContainers.forEach(el => el.classList.add('hidden'));
-    scoreInputs.forEach(el => el.setAttribute('required', ''));
-  }
-}
-    function resetForm() {
-  document.getElementById('gameName').value = '';
-  document.getElementById('winCondition').value = 'high';
-  document.getElementById('playerRows').innerHTML = '';
-  setToday();
-  addPlayerRow();
-  addPlayerRow();
-  toggleScoreInputs();
-}
-
-    function getExpectedScore(ra, rb) {
-      return 1 / (1 + Math.pow(10, (rb - ra) / 400));
-    }
-// Inside loadMatchesFromCloud() -> match.results.forEach -> pairwise loops:
-let outcome;
-if (p1.score === p2.score) {
-  outcome = 0.5;
-} else if (match.winCondition === 'high' || match.winCondition === 'noscore') {
-  outcome = p1.score > p2.score ? 1 : 0;
-} else {
-  outcome = p1.score < p2.score ? 1 : 0;
-}
-    async function loadMatchesFromCloud() {
-      try {
-        const response = await fetch(SHEET_API_URL);
-        const rawMatches = await response.json();
-
-        rawMatches.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        players = {};
-
-        rawMatches.forEach(match => {
-          if (!match.results || match.results.length < 2) return;
-
-          const numPlayers = match.results.length;
-          const ratingChanges = {};
-
-          match.results.forEach(p => {
-            ratingChanges[p.name] = 0;
-            if (!players[p.name]) players[p.name] = 1000;
-          });
-
-          for (let i = 0; i < numPlayers; i++) {
-            for (let j = i + 1; j < numPlayers; j++) {
-              const p1 = match.results[i];
-              const p2 = match.results[j];
-              const r1 = players[p1.name];
-              const r2 = players[p2.name];
-              const ea = getExpectedScore(r1, r2);
-
-              let outcome;
-              if (p1.score === p2.score) {
-                outcome = 0.5;
-              } else if (match.winCondition === 'high') {
-                outcome = p1.score > p2.score ? 1 : 0;
-              } else {
-                outcome = p1.score < p2.score ? 1 : 0;
-              }
-
-              const scoreDiff = Math.abs(p1.score - p2.score);
-              const movMultiplier = Math.max(1, Math.min(Math.log(scoreDiff + 1), 3.0));
-              const winChange = (K / (numPlayers - 1)) * movMultiplier * (outcome - ea);
-
-              ratingChanges[p1.name] += winChange;
-              ratingChanges[p2.name] -= winChange;
-            }
-          }
-
-          for (const name in ratingChanges) {
-            players[name] = Math.round(players[name] + ratingChanges[name]);
-          }
-        });
-
-        renderLeaderboard();
-      } catch (err) {
-        console.error('Cloud fetch failed:', err);
-      }
-    }
-
-    function renderLeaderboard() {
-      const tbody = document.getElementById('leaderboardBody');
-      const empty = document.getElementById('emptyState');
-      tbody.innerHTML = '';
-
-      const sorted = Object.entries(players).sort((a, b) => b[1] - a[1]);
-
-      if (sorted.length > 0) {
-        empty.classList.add('hidden');
-        sorted.forEach(([name, hr], index) => {
-          tbody.innerHTML += `<tr><td class="py-3 text-slate-500 font-mono">${index + 1}</td><td class="py-3 font-medium">${name}</td><td class="py-3 text-right font-bold accent">${hr}</td></tr>`;
-        });
-      } else {
-        empty.classList.remove('hidden');
-      }
-    }
-
-    document.getElementById('addPlayerBtn').addEventListener('click', () => addPlayerRow());
-
-    document.getElementById('matchForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const submitBtn = document.getElementById('submitBtn');
-  const date = document.getElementById('matchDate').value;
-  const gameName = document.getElementById('gameName').value.trim();
-  const winCondition = document.getElementById('winCondition').value;
-  const names = Array.from(document.querySelectorAll('.p-name')).map(i => i.value.trim());
-  
-  if (names.length < 2) {
-    alert('Enter at least 2 players.');
-    return;
-  }
-  if (names.some(name => !name)) {
-    alert('All player names are required.');
-    return;
-  }
-  if (new Set(names).size !== names.length) {
-    alert('Duplicate player names detected.');
-    return;
-  }
-
-  let scores = [];
-  if (winCondition === 'noscore') {
-    const winnerRadio = document.querySelector('.p-winner:checked');
-    if (!winnerRadio) {
-      alert('Please select a winner.');
-      return;
-    }
-    
-    // Assign 1 to the selected winner and 0 to the losers
-    const rows = document.querySelectorAll('.player-row');
-    rows.forEach(row => {
-      const isWinner = row.querySelector('.p-winner').checked;
-      scores.push(isWinner ? 1 : 0);
-    });
-  } else {
-    scores = Array.from(document.querySelectorAll('.p-score')).map(i => parseFloat(i.value));
-    if (scores.some(score => Number.isNaN(score))) {
-      alert('All scores/places must be valid numbers.');
-      return;
-    }
-  }
-
-  submitBtn.disabled = true;
-  submitBtn.innerText = 'SAVING TO CLOUD...';
-  
-  const payload = {
-    date,
-    gameName,
-    winCondition,
-    results: names.map((name, i) => ({ name, score: scores[i] }))
-  };
-
-  try {
-    await fetch(SHEET_API_URL, {
-      method: 'POST',
-      mode: 'cors',
-      redirect: 'follow',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    });
-    resetForm();
-    await loadMatchesFromCloud();
-  } catch (err) {
-    alert('Could not connect to online storage server.');
-    console.error(err);
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.innerText = 'PROCESS MATCH RESULTS';
-  }
-});
-      const payload = {
-        date,
-        gameName,
-        winCondition,
-        results: names.map((name, i) => ({ name, score: scores[i] }))
-      };
-
-      try {
-        await fetch(SHEET_API_URL, {
-          method: 'POST',
-          mode: 'cors',
-          redirect: 'follow',
-          headers: {
-            'Content-Type': 'text/plain;charset=utf-8'
-          },
-          body: JSON.stringify(payload)
-        });
-
-        resetForm();
-        await loadMatchesFromCloud();
-      } catch (err) {
-        alert('Could not connect to online storage server.');
-        console.error(err);
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerText = 'PROCESS MATCH RESULTS';
-      }
+      row.remove();
     });
 
+    container.appendChild(row);
+    toggleScoreInputs();
+  }
+
+  function toggleScoreInputs() {
+    const winCond = document.getElementById('winCondition').value;
+    const scoreContainers = document.querySelectorAll('.score-container');
+    const winnerContainers = document.querySelectorAll('.winner-container');
+    const scoreInputs = document.querySelectorAll('.p-score');
+
+    if (winCond === 'noscore') {
+      scoreContainers.forEach(el => el.classList.add('hidden'));
+      winnerContainers.forEach(el => el.classList.remove('hidden'));
+      scoreInputs.forEach(el => el.removeAttribute('required'));
+    } else {
+      scoreContainers.forEach(el => el.classList.remove('hidden'));
+      winnerContainers.forEach(el => el.classList.add('hidden'));
+      scoreInputs.forEach(el => el.setAttribute('required', ''));
+    }
+  }
+
+  function resetForm() {
+    document.getElementById('gameName').value = '';
+    document.getElementById('winCondition').value = 'high';
+    document.getElementById('playerRows').innerHTML = '';
     setToday();
     addPlayerRow();
     addPlayerRow();
-    loadMatchesFromCloud();
-  </script>
+    toggleScoreInputs();
+  }
+
+  function getExpectedScore(ra, rb) {
+    return 1 / (1 + Math.pow(10, (rb - ra) / 400));
+  }
+
+  async function loadMatchesFromCloud() {
+    try {
+      const response = await fetch(SHEET_API_URL);
+      const rawMatches = await response.json();
+      rawMatches.sort((a, b) => new Date(a.date) - new Date(b.date));
+      players = {};
+
+      rawMatches.forEach(match => {
+        if (!match.results || match.results.length < 2) return;
+        const numPlayers = match.results.length;
+        const ratingChanges = {};
+
+        match.results.forEach(p => {
+          ratingChanges[p.name] = 0;
+          if (!players[p.name]) players[p.name] = 1000;
+        });
+
+        for (let i = 0; i < numPlayers; i++) {
+          for (let j = i + 1; j < numPlayers; j++) {
+            const p1 = match.results[i];
+            const p2 = match.results[j];
+            const r1 = players[p1.name];
+            const r2 = players[p2.name];
+            const ea = getExpectedScore(r1, r2);
+
+            let outcome;
+            if (p1.score === p2.score) {
+              outcome = 0.5;
+            } else if (match.winCondition === 'high' || match.winCondition === 'noscore') {
+              outcome = p1.score > p2.score ? 1 : 0;
+            } else {
+              outcome = p1.score < p2.score ? 1 : 0;
+            }
+
+            const scoreDiff = Math.abs(p1.score - p2.score);
+            const movMultiplier = Math.max(1, Math.min(Math.log(scoreDiff + 1), 3.0));
+            const winChange = (K / (numPlayers - 1)) * movMultiplier * (outcome - ea);
+
+            ratingChanges[p1.name] += winChange;
+            ratingChanges[p2.name] -= winChange;
+          }
+        }
+
+        for (const name in ratingChanges) {
+          players[name] = Math.round(players[name] + ratingChanges[name]);
+        }
+      });
+
+      renderLeaderboard();
+    } catch (err) {
+      console.error('Cloud fetch failed:', err);
+    }
+  }
+
+  function renderLeaderboard() {
+    const tbody = document.getElementById('leaderboardBody');
+    const empty = document.getElementById('emptyState');
+    tbody.innerHTML = '';
+    const sorted = Object.entries(players).sort((a, b) => b[1] - a[1]);
+
+    if (sorted.length > 0) {
+      empty.classList.add('hidden');
+      sorted.forEach(([name, hr], index) => {
+        tbody.innerHTML += `<tr><td class="py-3 text-slate-500 font-mono">${index + 1}</td><td class="py-3 font-medium">${name}</td><td class="py-3 text-right font-bold accent">${hr}</td></tr>`;
+      });
+    } else {
+      empty.classList.remove('hidden');
+    }
+  }
+
+  document.getElementById('addPlayerBtn').addEventListener('click', () => addPlayerRow());
+
+  document.getElementById('matchForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const submitBtn = document.getElementById('submitBtn');
+    const date = document.getElementById('matchDate').value;
+    const gameName = document.getElementById('gameName').value.trim();
+    const winCondition = document.getElementById('winCondition').value;
+    const names = Array.from(document.querySelectorAll('.p-name')).map(i => i.value.trim());
+
+    if (names.length < 2) {
+      alert('Enter at least 2 players.');
+      return;
+    }
+    if (names.some(name => !name)) {
+      alert('All player names are required.');
+      return;
+    }
+    if (new Set(names).size !== names.length) {
+      alert('Duplicate player names detected.');
+      return;
+    }
+
+    let scores = [];
+    if (winCondition === 'noscore') {
+      const winnerRadio = document.querySelector('.p-winner:checked');
+      if (!winnerRadio) {
+        alert('Please select a winner.');
+        return;
+      }
+
+      // Assign 1 to the selected winner and 0 to the losers
+      const rows = document.querySelectorAll('.player-row');
+      rows.forEach(row => {
+        const isWinner = row.querySelector('.p-winner').checked;
+        scores.push(isWinner ? 1 : 0);
+      });
+    } else {
+      scores = Array.from(document.querySelectorAll('.p-score')).map(i => parseFloat(i.value));
+      if (scores.some(score => Number.isNaN(score))) {
+        alert('All scores/places must be valid numbers.');
+        return;
+      }
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'SAVING TO CLOUD...';
+
+    const payload = {
+      date,
+      gameName,
+      winCondition,
+      results: names.map((name, i) => ({ name, score: scores[i] }))
+    };
+
+    try {
+      await fetch(SHEET_API_URL, {
+        method: 'POST',
+        mode: 'cors',
+        redirect: 'follow',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      resetForm();
+      await loadMatchesFromCloud();
+    } catch (err) {
+      alert('Could not connect to online storage server.');
+      console.error(err);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'PROCESS MATCH RESULTS';
+    }
+  });
+
+  setToday();
+  addPlayerRow();
+  addPlayerRow();
+  loadMatchesFromCloud();
+</script>
 </body>
 </html>
