@@ -43,8 +43,19 @@
     </header>
 
     <section class="card p-6 rounded-xl shadow-xl">
-      <h2 class="text-xl font-bold mb-6 italic uppercase tracking-wider">📜 Match History</h2>
-      <div class="overflow-x-auto">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <h2 class="text-xl font-bold italic uppercase tracking-wider">📜 Match History</h2>
+    
+    <!-- Added Game Filter Dropdown -->
+    <div class="w-full sm:w-64">
+      <select id="gameFilter" onchange="renderHistory()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-slate-300 focus:outline-none focus:border-red-500">
+        <option value="all">All Games</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto">
+    <!-- Keep your table structure here -->
         <table class="w-full text-left text-sm">
           <thead>
             <tr class="text-slate-500 text-xs uppercase border-b border-slate-700">
@@ -65,58 +76,86 @@
 
   <script>
     const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbzoMkFIA4IvwV0ybCsdcfIniDxW5HkZChARd9CddPrh_yOn1WUg5ziOnSkSk6u0-56Eug/exec";
-    let matchHistory = [];
+let matchHistory = [];
 
-    async function loadMatchesFromCloud() {
-      try {
-        const response = await fetch(SHEET_API_URL);
-        const rawMatches = await response.json();
+async function loadMatchesFromCloud() {
+  try {
+    const response = await fetch(SHEET_API_URL);
+    const rawMatches = await response.json();
+    rawMatches.sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    matchHistory = [];
+    rawMatches.forEach(match => {
+      const sortedResults = [...match.results].sort((a, b) => {
+        // 'noscore' and 'high' both put highest score first (1 vs 0 or high values)
+        if (match.winCondition === 'high' || match.winCondition === 'noscore') {
+          return b.score - a.score;
+        }
+        return a.score - b.score;
+      });
 
-        rawMatches.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        matchHistory = [];
-        rawMatches.forEach(match => {
-          const sortedResults = [...match.results].sort((a, b) => {
-            if (match.winCondition === 'high') return b.score - a.score;
-            return a.score - b.score;
-          });
-
-          const summary = sortedResults.map(p => `${p.name} (${p.score})`).join(', ');
-          matchHistory.unshift({
-            date: match.date,
-            game: match.gameName,
-            summary
-          });
-        });
-
-        renderHistory();
-      } catch (err) {
-        console.error('Cloud fetch failed:', err);
-        document.getElementById('historyBody').innerHTML = `
-          <tr>
-            <td colspan="3" class="text-center py-8 text-red-400">
-              Error syncing storage online.
-            </td>
-          </tr>`;
-      }
-    }
-
-    function renderHistory() {
-      const tbody = document.getElementById('historyBody');
-      if (matchHistory.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="text-center py-8 text-slate-500">No matches found.</td></tr>';
-        return;
+      let summary;
+      if (match.winCondition === 'noscore') {
+        // Clean display for No Score games
+        summary = sortedResults.map((p, idx) => idx === 0 ? `🏆 ${p.name}` : p.name).join(', ');
+      } else {
+        summary = sortedResults.map(p => `${p.name} (${p.score})`).join(', ');
       }
 
-      tbody.innerHTML = matchHistory.map(item => `
-        <tr class="hover:bg-slate-800/50 transition-colors">
-          <td class="py-4 font-mono text-xs text-slate-400">${item.date}</td>
-          <td class="py-4 font-bold text-slate-300">${item.game || 'N/A'}</td>
-          <td class="py-4 text-slate-400 text-xs">${item.summary}</td>
-        </tr>
-      `).join('');
-    }
+      matchHistory.unshift({
+        date: match.date,
+        game: match.gameName || 'Unknown Game',
+        summary
+      });
+    });
 
+    populateFilterDropdown();
+    renderHistory();
+  } catch (err) {
+    console.error('Cloud fetch failed:', err);
+    document.getElementById('historyBody').innerHTML = `
+      <tr>
+        <td colspan="3" class="text-center py-8 text-red-400">
+          Error syncing storage online.
+        </td>
+      </tr>`;
+  }
+}
+
+// Dynamically creates options in the dropdown based on matches loaded
+function populateFilterDropdown() {
+  const filter = document.getElementById('gameFilter');
+  const uniqueGames = [...new Set(matchHistory.map(item => item.game))].sort();
+  
+  // Keep the 'All Games' option and add the unique ones
+  filter.innerHTML = '<option value="all">All Games</option>' + 
+    uniqueGames.map(game => `<option value="${game}">${game}</option>`).join('');
+}
+
+function renderHistory() {
+  const tbody = document.getElementById('historyBody');
+  const selectedGame = document.getElementById('gameFilter').value;
+
+  // Filter list based on selected dropdown value
+  const filteredMatches = selectedGame === 'all' 
+    ? matchHistory 
+    : matchHistory.filter(item => item.game === selectedGame);
+
+  if (filteredMatches.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" class="text-center py-8 text-slate-500">No matches found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filteredMatches.map(item => `
+    <tr class="hover:bg-slate-800/50 transition-colors">
+      <td class="py-4 font-mono text-xs text-slate-400">${item.date}</td>
+      <td class="py-4 font-bold text-slate-300">${item.game}</td>
+      <td class="py-4 text-slate-400 text-xs">${item.summary}</td>
+    </tr>
+  `).join('');
+}
+
+loadMatchesFromCloud();
     loadMatchesFromCloud();
   </script>
 </body>
